@@ -61,6 +61,22 @@ oe_result_t oe_sgx_sign_enclave_from_engine(
     const char* key_id,
     sgx_sigstruct_t* sigstruct);
 
+/**
+ * Get the digest of an unsigned sigstruct given the expected MRENCLAVE,
+ * ATTRIBUTES, ISVPRODID, and ISVSVN values.
+ *
+ * @param mrenclave[in] hash of the enclave to be signed
+ * @param digest[out] the digest of the sigstruct to be signed
+ *
+ * @return OE_OK success
+ */
+oe_result_t oe_sgx_get_sigstruct_digest(
+    const OE_SHA256* mrenclave,
+    uint64_t attributes,
+    uint16_t product_id,
+    uint16_t security_version,
+    OE_SHA256* digest);
+
 OE_EXTERNC_END
 
 #endif /* _OE_SIGNSGX_H */

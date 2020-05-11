@@ -22,7 +22,7 @@ typedef struct _config_file_options
     uint64_t num_tcs;
     uint16_t product_id;
     uint16_t security_version;
-} ConfigFileOptions;
+} config_file_options_t;
 
 #define CONFIG_FILE_OPTIONS_INITIALIZER                                 \
     {                                                                   \
@@ -31,7 +31,7 @@ typedef struct _config_file_options
         .product_id = OE_UINT16_MAX, .security_version = OE_UINT16_MAX, \
     }
 
-static int _load_config_file(const char* path, ConfigFileOptions* options)
+static int _load_config_file(const char* path, config_file_options_t* options)
 {
     int rc = -1;
     FILE* is = NULL;
@@ -272,7 +272,7 @@ done:
 /* Merge configuration file options into enclave properties */
 void _merge_config_file_options(
     oe_sgx_enclave_properties_t* properties,
-    const ConfigFileOptions* options)
+    const config_file_options_t* options)
 {
     bool initialized = false;
 
@@ -315,22 +315,13 @@ void _merge_config_file_options(
         properties->header.size_settings.num_tcs = options->num_tcs;
 }
 
-int oesign(
+oe_result_t _initialize_enclave_properties(
     const char* enclave,
     const char* conffile,
-    const char* keyfile,
-    const char* engine_id,
-    const char* engine_load_path,
-    const char* key_id)
+    oe_sgx_enclave_properties_t* props)
 {
-    int ret = 1;
-    oe_result_t result = OE_UNEXPECTED;
-    oe_enclave_t enc;
-    void* pem_data = NULL;
-    size_t pem_size;
-    ConfigFileOptions options = CONFIG_FILE_OPTIONS_INITIALIZER;
-    oe_sgx_enclave_properties_t props;
-    oe_sgx_load_context_t context;
+    oe_result_t result = OE_INVALID_PARAMETER;
+    config_file_options_t options = CONFIG_FILE_OPTIONS_INITIALIZER;
 
     /* Load the configuration file */
     if (conffile && _load_config_file(conffile, &options) != 0)
@@ -346,43 +337,90 @@ int oesign(
      * found or fails the load.
      */
     OE_CHECK_ERR(
-        oe_read_oeinfo_sgx(enclave, &props),
+        oe_read_oeinfo_sgx(enclave, props),
         "Failed to load enclave: %s: result=%s (%#x)",
         enclave,
         oe_result_str(result),
         result);
 
     /* Merge the loaded configuration file with existing enclave properties */
-    _merge_config_file_options(&props, &options);
+    _merge_config_file_options(props, &options);
 
     /* Check whether enclave properties are valid */
     {
         const char* field_name;
         OE_CHECK_ERR(
-            oe_sgx_validate_enclave_properties(&props, &field_name),
+            oe_sgx_validate_enclave_properties(props, &field_name),
             "Invalid enclave property value: %s",
             field_name);
     }
 
+    result = OE_OK;
+
+done:
+    return result;
+}
+
+oe_result_t _get_sgx_enclave_hash(
+    const char* enclave,
+    oe_sgx_enclave_properties_t* props,
+    OE_SHA256* hash)
+{
+    oe_result_t result = OE_UNEXPECTED;
+    oe_enclave_t enc;
+    oe_sgx_load_context_t context = {0};
+
     /* Initialize the context parameters for measurement only */
     OE_CHECK_ERR(
         oe_sgx_initialize_load_context(
-            &context, OE_SGX_LOAD_TYPE_MEASURE, props.config.attributes),
-        "oe_sgx_initialize_load_context() failed");
+            &context, OE_SGX_LOAD_TYPE_MEASURE, props->config.attributes),
+        "oe_sgx_initialize_load_context(): result=%s (%#x)",
+        oe_result_str(result),
+        result);
 
     /* Build an enclave to obtain the MRENCLAVE measurement */
     OE_CHECK_ERR(
-        oe_sgx_build_enclave(&context, enclave, &props, &enc),
+        oe_sgx_build_enclave(&context, enclave, props, &enc),
         "oe_sgx_build_enclave(): result=%s (%#x)",
         oe_result_str(result),
         result);
+
+    /* Copy the resulting hash out */
+    OE_STATIC_ASSERT(sizeof(enc.hash.buf) == 32);
+    memcpy(hash->buf, enc.hash.buf, sizeof(enc.hash.buf));
+    result = OE_OK;
+
+done:
+    oe_sgx_cleanup_load_context(&context);
+    return result;
+}
+
+int oesign(
+    const char* enclave,
+    const char* conffile,
+    const char* keyfile,
+    const char* engine_id,
+    const char* engine_load_path,
+    const char* key_id)
+{
+    int ret = 1;
+    oe_result_t result = OE_UNEXPECTED;
+    void* pem_data = NULL;
+    size_t pem_size;
+    oe_sgx_enclave_properties_t props;
+    OE_SHA256 hash = {0};
+
+    OE_CHECK_NO_TRACE(
+        _initialize_enclave_properties(enclave, conffile, &props));
+
+    OE_CHECK_NO_TRACE(_get_sgx_enclave_hash(enclave, &props, &hash));
 
     if (engine_id)
     {
         /* Initialize the sigstruct object */
         OE_CHECK_ERR(
             oe_sgx_sign_enclave_from_engine(
-                &enc.hash,
+                &hash,
                 props.config.attributes,
                 props.config.product_id,
                 props.config.security_version,
@@ -406,7 +444,7 @@ int oesign(
         /* Initialize the SigStruct object */
         OE_CHECK_ERR(
             oe_sgx_sign_enclave(
-                &enc.hash,
+                &hash,
                 props.config.attributes,
                 props.config.product_id,
                 props.config.security_version,
@@ -428,11 +466,41 @@ int oesign(
     ret = 0;
 
 done:
-
     if (pem_data)
         free(pem_data);
 
-    oe_sgx_cleanup_load_context(&context);
+    return ret;
+}
 
+int oedigest(const char* enclave, const char* conffile, const char* digest_file)
+{
+    OE_UNUSED(digest_file);
+
+    int ret = -1;
+    oe_result_t result = OE_UNEXPECTED;
+    oe_sgx_enclave_properties_t props;
+    OE_SHA256 mrenclave = {0};
+    OE_SHA256 digest = {0};
+
+    OE_CHECK_NO_TRACE(
+        _initialize_enclave_properties(enclave, conffile, &props));
+
+    OE_CHECK_NO_TRACE(_get_sgx_enclave_hash(enclave, &props, &mrenclave));
+
+    /* Construct the unsigned sigstruct with the MRENCLAVE and get its digest */
+    OE_CHECK_ERR(
+        oe_sgx_get_sigstruct_digest(
+            &mrenclave,
+            props.config.attributes,
+            props.config.product_id,
+            props.config.security_version,
+            &digest),
+        "oe_sgx_get_sigstruct_digest(): result=%s (%#x)",
+        oe_result_str(result),
+        result);
+
+    /* Write the sigstruct digest value to file */
+
+done:
     return ret;
 }
