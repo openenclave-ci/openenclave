@@ -92,6 +92,79 @@ set_tests_properties(
     "ERROR: oe_sgx_sign_enclave_from_engine\\(\\) failed: result=OE_INVALID_PARAMETER"
 )
 
+# Test engine signing with missing --engine (-n) argument
+add_test(
+  NAME tests/oesign-engine-missing-engine-arg
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/valid.conf -p $<TARGET_FILE:oesign_test_engine>
+    -i ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+set_tests_properties(
+  tests/oesign-engine-missing-engine-arg
+  PROPERTIES PASS_REGULAR_EXPRESSION
+             "ERROR: Both --key-id and its --engine must be specified")
+
+# Test engine signing with missing --key-id (-i) argument
+add_test(
+  NAME tests/oesign-engine-missing-key-id-arg
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/valid.conf -n oesign-test-engine -p
+    $<TARGET_FILE:oesign_test_engine>)
+
+set_tests_properties(
+  tests/oesign-engine-missing-key-id-arg
+  PROPERTIES PASS_REGULAR_EXPRESSION
+             "ERROR: Both --key-id and its --engine must be specified")
+
+# Test engine signing with conflicting --key-file (-k) argument
+add_test(
+  NAME tests/oesign-engine-conflicting-key-file-arg
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/valid.conf -n oesign-test-engine -p
+    $<TARGET_FILE:oesign_test_engine> -i
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem -k
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem)
+
+set_tests_properties(
+  tests/oesign-engine-conflicting-key-file-arg
+  PROPERTIES PASS_REGULAR_EXPRESSION
+             "ERROR: --key-file cannot be used with engine options")
+
+# Test engine signing with conflicting --digest-signature (-d) argument
+add_test(
+  NAME tests/oesign-engine-conflicting-digest-signature-arg
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/valid.conf -n oesign-test-engine -p
+    $<TARGET_FILE:oesign_test_engine> -i
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem -d
+    oesign_test_enc.digest.sig)
+
+set_tests_properties(
+  tests/oesign-engine-conflicting-digest-signature-arg
+  PROPERTIES
+    PASS_REGULAR_EXPRESSION
+    "ERROR: --digest-signature and --x509 cannot be used with engine options")
+
+# Test engine signing with conflicting --x509 (-x) argument
+add_test(
+  NAME tests/oesign-engine-conflicting-x509-arg
+  COMMAND
+    oesign sign -e $<TARGET_FILE:oesign_test_enc> -c
+    ${OESIGN_TEST_INPUTS_DIR}/valid.conf -n oesign-test-engine -p
+    $<TARGET_FILE:oesign_test_engine> -i
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.private.pem -x
+    ${OESIGN_TEST_INPUTS_DIR}/sign_key.cert.pem)
+
+set_tests_properties(
+  tests/oesign-engine-conflicting-x509-arg
+  PROPERTIES
+    PASS_REGULAR_EXPRESSION
+    "ERROR: --digest-signature and --x509 cannot be used with engine options")
+
 # Test signing key with invalid exponent for SGX signing
 add_test(
   NAME tests/oesign-engine-invalid-key-exp
