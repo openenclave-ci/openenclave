@@ -7,12 +7,20 @@ target_include_directories(oesign_test_engine PRIVATE include)
 
 set(OESIGN_TEST_INPUTS_DIR ${CMAKE_CURRENT_BINARY_DIR}/../test-inputs)
 
-configure_file(../sign-and-verify.py sign-and-verify.py COPYONLY)
+add_custom_command(
+  OUTPUT sign-and-verify.py
+  COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../sign-and-verify.py
+          ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_target(
   oesign_engine_test_dependencies ALL
-  DEPENDS oesign oesign_test_host oesign_test_enc oesign_test_keys
-          oesign_test_configs oesign_test_engine)
+  DEPENDS oesign
+          oesign_test_host
+          oesign_test_enc
+          oesign_test_keys
+          oesign_test_configs
+          oesign_test_engine
+          sign-and-verify.py)
 
 # Test oesign succeeds with valid short form of engine signing parameters
 set(OESIGN_ENGINE_VALID_SHORT_ARGS

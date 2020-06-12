@@ -24,17 +24,17 @@ add_custom_command(
           --config_file non_debug.conf --debug 0)
 
 add_custom_command(
-  OUTPUT more_heap_pages.conf
+  OUTPUT more_num_heap_pages.conf
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file more_num_heap_pages.conf --num_heap_pages 2048)
 
 add_custom_command(
-  OUTPUT more_stack_pages.conf
+  OUTPUT more_num_stack_pages.conf
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file more_num_stack_pages.conf --num_stack_pages 2048)
 
 add_custom_command(
-  OUTPUT more_tcs.conf
+  OUTPUT more_num_tcs.conf
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/make-oesign-config.py
           --config_file more_num_tcs.conf --num_tcs 4)
 
@@ -56,9 +56,9 @@ add_custom_command(
 add_custom_target(
   oesign_test_configs ALL
   DEPENDS empty.conf
-          more_heap_pages.conf
-          more_stack_pages.conf
-          more_tcs.conf
+          more_num_heap_pages.conf
+          more_num_stack_pages.conf
+          more_num_tcs.conf
           new_product_id.conf
           new_security_version.conf
           negative_num_heap_pages.conf

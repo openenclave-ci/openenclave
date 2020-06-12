@@ -3,12 +3,20 @@
 
 set(OESIGN_TEST_INPUTS_DIR ${CMAKE_CURRENT_BINARY_DIR}/../test-inputs)
 
-configure_file(../sign-and-verify.py sign-and-verify.py COPYONLY)
+add_custom_command(
+  OUTPUT sign-and-verify.py
+  COMMAND cmake -E copy ${CMAKE_CURRENT_SOURCE_DIR}/../sign-and-verify.py
+          ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_target(
   oesign_digest_test_dependencies ALL
-  DEPENDS oesign oesign_test_host oesign_test_enc oesign_test_alt_enc
-          oesign_test_keys oesign_test_configs)
+  DEPENDS oesign
+          oesign_test_host
+          oesign_test_enc
+          oesign_test_alt_enc
+          oesign_test_keys
+          oesign_test_configs
+          sign-and-verify.py)
 
 # Test digest sign commands with valid short form of arguments succeed
 set(OESIGN_PKEYUTL_ARGS
