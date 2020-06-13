@@ -162,12 +162,19 @@ add_test(
     ${OESIGN_TEST_INPUTS_DIR}/valid.conf -x
     ${OESIGN_TEST_INPUTS_DIR}/sign_key_2.cert.pem -d oesign_test_enc.digest.sig)
 
-set_tests_properties(
-  tests/oesign-digest-sign-mismatched-x509
-  PROPERTIES
-    PASS_REGULAR_EXPRESSION
+set(OESIGN_DIGEST_SIGN_MISMATCHED_X509_REGEX
     "ERROR: Digest signature cannot be validated against the specified enclave configuration using the provided certificate"
 )
+if (WIN32)
+  # Windows occasionally returns STATUS_INVALID_PARAMETER (0xc000000d) instead, see issue #3132
+  string(APPEND ${OESIGN_DIGEST_SIGN_MISMATCHED_X509_REGEX}
+         ";BCryptVerifySignature failed (err=0xc000000d)")
+endif ()
+
+set_tests_properties(
+  tests/oesign-digest-sign-mismatched-x509
+  PROPERTIES PASS_REGULAR_EXPRESSION
+             ${OESIGN_DIGEST_SIGN_MISMATCHED_X509_REGEX})
 
 # Test sign command for digest options with mismatched Debug config
 add_test(
