@@ -16,12 +16,4 @@ The subset of libc functionality provided by oelibc for use inside an enclave.
 
 ## [Libcxx support](/docs/LibcxxSupport.md)
 
-The subset of libcxx functionality provided by oelibcxx for use inside an enclave.
-
-## [mbedtls library](/docs/MbedtlsSupport.md)
-
-The subset of [mbedtls](https://tls.mbed.org/) functionality for use inside an enclave.
-
-## [System EDL files](/docs/SystemEdls.md)
-
-The list of system EDL files that allow for user opt-in.
+The subset of libcxx functionality provided by oel
