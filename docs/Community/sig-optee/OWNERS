@@ -1,10 +1,11 @@
-chair:
-  - Britel
-
-approvers:
-  - Britel
-  - HernanGatta
-  - paulcallen
-  - dthaler
-
+required_reviewers:
+- BRMcLaren
+- oe-ci-robot
 reviewers:
+- BRMcLaren
+- oe-ci-robot
+approvers:
+- BRMcLaren
+- oe-ci-robot
+labels:
+- sig/optee

@@ -1,9 +1,11 @@
-chair:
-  - anakrish
-
-approvers:
-  - anakrish
-  - BRMcLaren
-  - johnkord
-
+required_reviewers:
+- BRMcLaren
+- oe-ci-robot
 reviewers:
+- BRMcLaren
+- oe-ci-robot
+approvers:
+- BRMcLaren
+- oe-ci-robot
+labels:
+- sig/testing
