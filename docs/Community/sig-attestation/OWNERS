@@ -12,3 +12,6 @@ approvers:
   - shnwc
 
 reviewers:
+
+labels:
+  - sig/attestation

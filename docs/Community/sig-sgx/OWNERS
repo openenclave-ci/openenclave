@@ -13,3 +13,6 @@ approvers:
   - yakman2020
 
 reviewers:
+
+labels:
+  - sig/sgx

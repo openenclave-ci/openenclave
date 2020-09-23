@@ -17,3 +17,5 @@ reviewers:
 
 # NOTE(Aeva): sig-website is not listed here because the website
 # represents output from, not input into, the design process
+labels:
+  - sig/architecture

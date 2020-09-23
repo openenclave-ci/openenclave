@@ -4,3 +4,6 @@ chair:
 approvers:
 
 reviewers:
+
+labels:
+  - sig/release
