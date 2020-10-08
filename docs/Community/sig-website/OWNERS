@@ -6,3 +6,6 @@ approvers:
   - AevaOnline
 
 reviewers:
+
+labels:
+  - sig/website

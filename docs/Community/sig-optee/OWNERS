@@ -8,3 +8,6 @@ approvers:
   - dthaler
 
 reviewers:
+
+labels:
+  - sig/optee

@@ -8,3 +8,6 @@ approvers:
   - johnkord
 
 reviewers:
+
+labels:
+  - sig/tools
