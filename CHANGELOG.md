@@ -1,4 +1,4 @@
-Changelog
+Changelog  
 =========
 
 Major work such as new features, bug fixes, feature deprecations, and other
