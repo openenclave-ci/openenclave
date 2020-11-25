@@ -1,15 +1,4 @@
-Open Enclave SDK
-================
-
-[![Bors enabled](https://bors.tech/images/badge_small.svg)](https://app.bors.tech/repositories/21855)
-[![Join the chat at https://gitter.im/openenclave/community](https://badges.gitter.im/openenclave/community.svg)](https://gitter.im/openenclave/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-Integration Partners
---------------------
-
-Agnostic Cloud Provider
-
-[![Build Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Agnostic-Linux-Badge/badge/icon?subject=Provider%20Agnostic%20Regession)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Agnostic-Linux-Badge/)
+ipelines/job/Agnostic-Linux-Badge/badge/icon?subject=Provider%20Agnostic%20Regession)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Agnostic-Linux-Badge/)
 [![Build Status](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Agnostic-Linux-Badge/badge/icon?subject=Agnostic-Linux)](https://oe-jenkins-dev.westeurope.cloudapp.azure.com/job/pipelines/job/Agnostic-Linux-Badge/)
 
 Azure
